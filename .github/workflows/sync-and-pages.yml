@@ -1,4 +1,4 @@
-name: Sync and Deploy
+name: Deploy portfolio to GitHub Pages
 on:
   push:
     branches: ["main"]
@@ -12,9 +12,12 @@ concurrency:
   cancel-in-progress: false
 jobs:
   deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -30,5 +33,14 @@ jobs:
             git commit -m "Sync portfolio source [skip ci]"
             git push origin HEAD:main
           fi
-      - name: Deploy to Vercel-compatible static output
-        run: echo "Static portfolio source synced successfully"
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - name: Upload site artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
